@@ -41,11 +41,11 @@ abstract class AbstractContentProvider implements ContentProviderInterface
     protected $contentProviderCategory = null;
 
     /**
-     * Supported content types
+     * Content type name or handler class
      *
-     * @var array
+     * @var string
      */
-    protected $contentTypes;
+    protected $contentType;
 
     /**
      * Constructor
@@ -58,17 +58,7 @@ abstract class AbstractContentProvider implements ContentProviderInterface
      * Get content
      *
      * @param string|int|array $key  Id, Uuid or content name slug
-     * @return ContentItemInterface|null
+     * @return array|null
      */
-    abstract public function getContent($key);
-
-    /**
-     * Get content list
-     *
-     * @param mixed|null $filter
-     * @param integer $page
-     * @param integer $perPage
-     * @return array ContentItemInterface
-    */
-    abstract public function getContentList($filter = null, int $page = 1, int $perPage = 20): array;
+    abstract public function getContent($key): ?array;    
 }

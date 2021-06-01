@@ -9,6 +9,8 @@
  */
 namespace Arikaim\Core\Content\Traits;
 
+use Arikaim\Core\Interfaces\Content\ContentTypeInterface;
+use Arikaim\Core\Content\ContentItem;
 use Exception;
 
 /**
@@ -17,13 +19,54 @@ use Exception;
 trait ContentProvider
 {
     /**
-     * Get supported content types
-     *    
-     * @return array
+     * Get total data items
+     *
+     * @return integer|null
      */
-    public function getContentTypes(): array
+    public function getItemsCount(): ?int
     {
-        return (\is_array($this->contentTypes) == false) ? ['text'] : $this->contentTypes;
+        return null;
+    }
+
+    /**
+     * Get class name
+     *
+     * @return void
+     */
+    public function getClass(): string
+    {
+        return \get_class($this);
+    }
+
+    /**
+     * Get supported content type
+     *    
+     * @return ContentTypeInterface|null
+     */
+    public function getContentType(): ?ContentTypeInterface
+    {
+        return $this->contentType;
+    }
+
+    /**
+     * Get supported content types
+     *
+     * @return array
+    */
+    public function getSupportedContentTypes(): array
+    {
+        return $this->supportedContentTypes ?? [];
+    }
+
+    /**
+     * Set content type
+     *    
+     * @param ContentTypeInterface $contentType
+     * @return void
+     */
+    public function setContentType(ContentTypeInterface $contentType): void
+    {
+        $this->contentType = $contentType;
     }
 
     /**
@@ -44,14 +87,10 @@ trait ContentProvider
     /**
      * Get provider title
      *
-     * @return string
+     * @return string|null
      */
-    public function getProviderTitle(): string
+    public function getProviderTitle(): ?string
     {
-        if (\is_null($this->contentProviderName) == true) {
-            throw new Exception('Not valid content provider title',1); 
-        }
-
         return $this->contentProviderTitle;
     }
 
@@ -63,5 +102,34 @@ trait ContentProvider
     public function getProviderCategory(): ?string
     {
         return $this->contentProviderCategory;
+    }
+
+    /**
+     * Get content
+     *
+     * @param mixed $key  Id, Uuid or content name slug
+     * @return mixed
+     */
+    public function get($key)
+    {
+        $data = $this->getContent($key);
+        $contentType = $this->getContentType();
+        // resolve content Id
+        $id = $data['uuid'] ?? $data['id'] ?? $key;
+
+        return ContentItem::create($data,$contentType,(string)$id);
+    }
+    
+    /**
+     * Get content list
+     *
+     * @param mixed|null $filter
+     * @param integer $page
+     * @param integer $perPage
+     * @return array[ContentItemInterface]
+    */
+    public function getContentItems($filter = null, int $page = 1, int $perPage = 20): ?array
+    {
+        return null;
     }
 }

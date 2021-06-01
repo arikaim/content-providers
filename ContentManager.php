@@ -9,10 +9,12 @@
  */
 namespace Arikaim\Core\Content;
 
+use Arikaim\Core\Content\ContentTypeRegistry;
 use Arikaim\Core\Utils\Path;
 use Arikaim\Core\System\Traits\PhpConfigFile;
 use Arikaim\Core\Interfaces\Content\ContentManagerInterface;
 use Arikaim\Core\Interfaces\Content\ContentProviderInterface;
+use Arikaim\Core\Utils\Uuid;
 use Exception;
 
 /**
@@ -25,7 +27,7 @@ class ContentManager implements ContentManagerInterface
     /**
      *  Default providers config file name
      */
-    const CONFIG_FILE_NAME = Path::CONFIG_PATH . 'content-providers.php';
+    const PROVIDERS_FILE_NAME = Path::CONFIG_PATH . 'content-providers.php';
 
     /**
      * Content providers
@@ -35,24 +37,98 @@ class ContentManager implements ContentManagerInterface
     protected $contentProviders = null;
 
     /**
+     * Content type registry
+     *
+     * @var null
+     */
+    protected $contentTypeRegistry = null;
+
+    /**
      * Content providers config file
      *
      * @var string
      */
-    private $configFileName;
+    private $providersFileName;
 
     /**
      * Constructor
      * 
-     * @param string|null $configFileName
+     * @param string|null $providersFileName
      */
-    public function __construct(?string $configFileName = null)
+    public function __construct(?string $providersFileName = null)
     {
-        $this->configFileName = $configFileName ?? Self::CONFIG_FILE_NAME;          
+        $this->providersFileName = $providersFileName ?? Self::PROVIDERS_FILE_NAME;                 
     }
 
     /**
-     * Load content providers
+     * Get content type from registry
+     *
+     * @param string $name
+     * @return ContentProviderInterface|null
+     */
+    public function type(string $name, ?string $providerName = null): ?ContentProviderInterface
+    {        
+        $contentType = $this->typeRegistry()->get($name);
+        if (empty($providerName) == true) {
+            $providers = $this->typeRegistry()->getPoviders($name);
+            $providerName = $providers[0] ?? null;
+        }      
+        if (empty($provider) == true || $contentType == null) {
+            return null;
+        }
+
+        $provider = $this->provider($providerName);
+        if ($provider == null) {
+            return null;
+        }
+
+        $provider->setContentType($contentType);
+
+        return $provider;
+    }
+
+    /**
+     * Get content type registry
+     *
+     * @return object
+     */
+    public function typeRegistry()
+    {
+        if ($this->contentTypeRegistry == null) {
+            $this->contentTypeRegistry = new ContentTypeRegistry();
+        }
+
+        return $this->contentTypeRegistry;
+    }
+
+    /**
+     * Create content item
+     *
+     * @param mixed $data
+     * @param string $contentType
+     * @return mixed
+     */
+    public function createItem($data, string $contentType)
+    {
+        $type = $this->typeRegistry()->get($contentType);
+        if ($type == null) {
+            return null;
+        }
+        if (\is_object($data) == true) {
+            $data = $data->toArray();
+        }
+        if (\is_array($data) == false) {
+            $data = [$data];
+        }
+
+        // resolve content Id
+        $id = $data['uuid'] ?? $data['id'] ?? Uuid::create();
+
+        return ContentItem::create($data,$type,(string)$id);
+    }
+
+    /**
+     * Load content providers and content types
      *
      * @param boolean $reload
      * @return void
@@ -60,8 +136,8 @@ class ContentManager implements ContentManagerInterface
     public function load(bool $reload = false): void
     {
         if ((\is_null($this->contentProviders) == true) || ($reload == true)) {
-            $this->contentProviders = $this->include($this->configFileName);
-        }
+            $this->contentProviders = $this->include($this->providersFileName);
+        }        
     }
 
     /**
@@ -71,7 +147,7 @@ class ContentManager implements ContentManagerInterface
      * @param string|null $contentType
      * @return array
      */
-    public function getProviders(?string $category, ?string $contentType = null): array
+    public function getProviders(?string $category = null, ?string $contentType = null): array
     {
         $this->load();     
         if ((empty($category) == true) && (empty($contentType) == true)) {
@@ -102,7 +178,10 @@ class ContentManager implements ContentManagerInterface
             return null;
         }
 
-        return new $item['handler']();
+        $provider = new $item['handler']();
+        // resolve content type
+
+        return $provider;
     }
 
     /**
@@ -132,11 +211,17 @@ class ContentManager implements ContentManagerInterface
         $details = $this->resolveProviderDetails($provider);
 
         // load current array
-        $this->contentProviders = $this->includePhpArray($this->configFileName);        
+        $this->contentProviders = $this->includePhpArray($this->providersFileName);        
         // add content provider
         $this->contentProviders[$details['name']] = $details;
 
-        return $this->saveConfigFile($this->configFileName,$this->contentProviders);    
+        // register provider in content type
+        $supportedContentTypes = $details['type'] ?? [];
+        foreach($supportedContentTypes as $type) {
+            $this->typeRegistry()->addProvider($type,$details['name']);
+        }
+
+        return $this->saveConfigFile($this->providersFileName,$this->contentProviders);    
     }
 
     /**
@@ -155,7 +240,7 @@ class ContentManager implements ContentManagerInterface
 
         unset($this->contentProviders[$name]);
 
-        return $this->saveConfigFile($this->configFileName,$this->contentProviders);     
+        return $this->saveConfigFile($this->providersFileName,$this->contentProviders);     
     }
 
     /**
@@ -171,7 +256,7 @@ class ContentManager implements ContentManagerInterface
             'handler'  => \get_class($provider),
             'name'     => $provider->getProviderName(),
             'title'    => $provider->getProviderTitle(),
-            'type'     => $provider->getContentTypes(),
+            'type'     => $provider->getSupportedContentTypes(),
             'category' => $provider->getProviderCategory()
         ];       
     }

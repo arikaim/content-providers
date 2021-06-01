@@ -10,6 +10,8 @@
 namespace Arikaim\Core\Content;
 
 use Arikaim\Core\Interfaces\Content\ContentItemInterface;
+use Arikaim\Core\Interfaces\Content\ContentTypeInterface;
+use Arikaim\Core\Interfaces\Content\FieldInterface;
 
 /**
  *  Content item
@@ -17,68 +19,156 @@ use Arikaim\Core\Interfaces\Content\ContentItemInterface;
 class ContentItem implements ContentItemInterface
 {
     /**
-     * Content value
+     * Content data
      *
      * @var array
      */
-    protected $content;
+    protected $data;
 
     /**
-     * Content item title
+     * Content item type
+     *
+     * @var ContentTypeInterface
+     */
+    protected $type;
+
+    /**
+     * Content item id
      *
      * @var string
      */
-    protected $title;
+    protected $id;
 
     /**
      * Constructor
      * 
-     * @param array $content
-     * @param string $title
-     * @param string|int $id
+     * @param array $data
+     * @param ContentTypeInterface $type
+     * @param string $id
      * @param 
      */
-    public function __construct(array $content, string $title, $id)
+    public function __construct(array $data, ContentTypeInterface $type, string $id)
     {
-        $this->content = $content;
-        $this->title = $title;
+        $this->data = $data;
+        $this->type = $type;
         $this->id = $id;
     }
 
-    public static function create($content, string $title, $id): ContentItemInterface
-    {
-        return new Self($content,$title,$id);
-    } 
-
     /**
-     * Get item content
+     * Get content type
      *
-     * @return mixed
+     * @return ContentTypeInterface
      */
-    public function content(?string $type = null)
+    public function getType(): ContentTypeInterface 
     {
-        $type = $type ?? ContentItemInterface::TEXT_TYPE;
-
-        return $this->content;
+        return $this->type;
     }
 
     /**
-     * Get content item title
+     * Run action
      *
-     * @return string
+     * @param string $name
+     * @param array|null $options
+     * @return void
      */
-    public function getTitle(): string
+    public function runAction(string $name, ?array $options = [])
     {
-        return $this->title;
+        $actions = $this->actions();
+        if (isset($actions[$name]) == false) {
+            return false;
+        }
+
+        return $actions[$name]->execute($this,$options);     
+    }
+
+    /**
+     * Create content item
+     *
+     * @param array $data
+     * @param ContentTypeInterface $type
+     * @param string $id
+     * @return mixed
+     */
+    public static function create(array $data, ContentTypeInterface $type, string $id)
+    {
+        return new Self($data,$type,$id);
+    } 
+
+    /**
+     * Get actions
+     *
+     * @return array
+     */
+    public function actions(): array
+    {
+        return $this->type->getActions();
+    }
+
+    /**
+     * Get fields
+     *
+     * @return array
+     */
+    public function fields(): array
+    {
+        return $this->type->getFields();
+    }
+
+    /**
+     * Get field value
+     *
+     * @param string $fieldName
+     * @param mixed $default
+     * @return mixed
+     */
+    public function getValue(string $fieldName, $default = null)
+    {
+        $field = $this->field($fieldName);
+
+        return ($field == null) ? $default : $field->getValue();
+    }
+
+    /**
+     * Get content field
+     *
+     * @param string $fieldName
+     * @return FieldInterface|null
+     */
+    public function field(string $fieldName): ?FieldInterface
+    {
+        $field = $this->type->getField($fieldName);
+        if (\is_null($field) == true) {
+            return null;
+        }
+        $value = $this->data[$fieldName] ?? null;
+        $field->setValue($value);
+
+        return $field;
     }
 
     /**
      * Get content item id
      *
-     * @return int|string
+     * @return string
      */
-    public function getId()
+    public function getId(): string
     {
         return $this->id;
-    }
+    }   
+
+    /**
+     * To array
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        $result = [];
+        foreach($this->fields() as $field) {
+            $name = $field->getName();
+            $result[$name] = $this->data[$name] ?? null;
+        }
+
+        return $result;
+    } 
 }
