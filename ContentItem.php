@@ -55,6 +55,28 @@ class ContentItem implements ContentItemInterface
     }
 
     /**
+     * True if field exist
+     *
+     * @param string $name
+     * @return boolean
+     */
+    public function __isset($name) 
+    {      
+        return \array_key_exists($name,$this->data);
+    }
+
+    /**
+     * Get field value
+     *
+     * @param string $name
+     * @return mixed
+     */
+    public function __get($name)
+    {      
+        return $this->data[$name] ?? null;
+    }
+
+    /**
      * Get content type
      *
      * @return ContentTypeInterface
@@ -111,7 +133,15 @@ class ContentItem implements ContentItemInterface
      */
     public function fields(): array
     {
-        return $this->type->getFields();
+        $fields = $this->type->getFields();
+        $result = [];
+        foreach($fields as $field) {
+            $value = $this->data[$field->getName()] ?? null;
+            $field->setValue($value);
+            $result[] = $field;
+        }
+
+        return $result;
     }
 
     /**
@@ -144,6 +174,18 @@ class ContentItem implements ContentItemInterface
         $field->setValue($value);
 
         return $field;
+    }
+
+    /**
+     * Set field value
+     *
+     * @param string $fieldName
+     * @param mixed $value
+     * @return void
+     */
+    public function setValue(string $fieldName, $value): void
+    {
+        $this->data[$fieldName] = $value;
     }
 
     /**

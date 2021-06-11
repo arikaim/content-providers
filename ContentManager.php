@@ -73,7 +73,7 @@ class ContentManager implements ContentManagerInterface
             $providers = $this->typeRegistry()->getPoviders($name);
             $providerName = $providers[0] ?? null;
         }      
-        if (empty($provider) == true || $contentType == null) {
+        if (empty($providerName) == true || $contentType == null) {
             return null;
         }
 

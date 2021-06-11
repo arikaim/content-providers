@@ -19,6 +19,31 @@ use Exception;
 trait ContentProvider
 {
     /**
+     * Create new content item
+     *
+     * @param array $data
+     * @param string|null $contentType  Content type name
+     * @return array|null
+     */
+    public function createItem(array $data, ?string $contentType = null): ?array
+    {
+        return null;
+    }
+
+    /**
+     * Save content item
+     *
+     * @param string|int $key
+     * @param array $data
+     * @param string|null $contentType  Content type name
+     * @return boolean
+     */
+    public function saveItem($key, array $data, ?string $contentType = null): bool
+    {
+        return false;
+    }
+
+    /**
      * Get total data items
      *
      * @return integer|null
@@ -112,8 +137,8 @@ trait ContentProvider
      */
     public function get($key)
     {
-        $data = $this->getContent($key);
         $contentType = $this->getContentType();
+        $data = $this->getContent($key);
         // resolve content Id
         $id = $data['uuid'] ?? $data['id'] ?? $key;
 
