@@ -139,6 +139,9 @@ trait ContentProvider
     {
         $contentType = $this->getContentType();
         $data = $this->getContent($key);
+        if ($data == null) {
+            return null;
+        }
         // resolve content Id
         $id = $data['uuid'] ?? $data['id'] ?? $key;
 
