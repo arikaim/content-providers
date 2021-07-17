@@ -133,7 +133,7 @@ trait ContentProvider
      * Get content
      *
      * @param mixed $key  Id, Uuid or content name slug
-     * @return mixed
+     * @return ContentItemInterface|null
      */
     public function get($key)
     {

@@ -61,6 +61,17 @@ class ContentManager implements ContentManagerInterface
     }
 
     /**
+     * Return true if content typ eexists
+     *
+     * @param string $name
+     * @return boolean
+     */
+    public function hasContentType(string $name): bool
+    {
+        return $this->typeRegistry()->has($name);
+    } 
+
+    /**
      * Get content type from registry
      *
      * @param string $name
