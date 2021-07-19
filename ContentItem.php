@@ -154,8 +154,11 @@ class ContentItem implements ContentItemInterface
     public function getValue(string $fieldName, $default = null)
     {
         $field = $this->field($fieldName);
-
-        return ($field == null) ? $default : $field->getValue();
+        if ($field == null) {
+            return (isset($this->data[$fieldName]) == true) ? $this->data[$fieldName] : $default;
+        }
+        
+        return $field->getValue();
     }
 
     /**

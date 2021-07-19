@@ -9,6 +9,7 @@
  */
 namespace Arikaim\Core\Content;
 
+use Arikaim\Core\Content\Type\ArrayContentType;
 use Arikaim\Core\Content\ContentTypeRegistry;
 use Arikaim\Core\Utils\Path;
 use Arikaim\Core\System\Traits\PhpConfigFile;
@@ -122,9 +123,8 @@ class ContentManager implements ContentManagerInterface
     public function createItem($data, string $contentType)
     {
         $type = $this->typeRegistry()->get($contentType);
-        if ($type == null) {
-            return null;
-        }
+        $type = ($type == null) ? new ArrayContentType() : $type;
+          
         if (\is_object($data) == true) {
             $data = $data->toArray();
         }
