@@ -122,7 +122,7 @@ class Field implements FieldInterface
      * @param string $name
      * @param string $type
      * @param string|null $title
-     * @param [type] $value
+     * @param mixed $value
      * @return FieldInterface
      */
     public static function create(string $name, string $type, ?string $title = null, $value = null): FieldInterface
