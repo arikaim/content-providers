@@ -58,7 +58,9 @@ abstract class AbstractContentProvider implements ContentProviderInterface
      * Get content
      *
      * @param string|int|array $key  Id, Uuid or content name slug
+     * @param string|null $contentType  Content type name
+     * @param string|array|null $keyFields
      * @return array|null
      */
-    abstract public function getContent($key): ?array;    
+    abstract public function getContent($key, ?string $contentType = null, $keyFields = null): ?array;    
 }

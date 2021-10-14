@@ -56,7 +56,7 @@ trait ContentProvider
     /**
      * Get class name
      *
-     * @return void
+     * @return string
      */
     public function getClass(): string
     {
@@ -154,10 +154,36 @@ trait ContentProvider
      * @param mixed|null $filter
      * @param integer $page
      * @param integer $perPage
-     * @return array[ContentItemInterface]
+     * @return array[ContentItemInterface]|null
     */
     public function getContentItems($filter = null, int $page = 1, int $perPage = 20): ?array
     {
-        return null;
+        $contentType = $this->getContentType();
+        $keyFields = $filter['key_fields'] ?? null;
+        if ($keyFields == null) {
+            return null;
+        }
+       
+        $model = $this->whereNotNull('id');
+
+        foreach($keyFields as $field) {
+            $value = $filter['query'] ?? $filter['key_values'][$field] ?? '';        
+            $model = $model->orWhereRaw('UPPER(' . $field . ') LIKE ?',['%' . $value . '%']);
+        }
+     
+      //  $sql = \str_replace(['?'],["\'%s\'"],$model->toSql());
+        
+      //  echo \vsprintf($sql,$model->getBindings());     
+
+       
+
+        $data = $model->get()->toArray();
+
+        $items = [];
+        foreach ($data as $row) {
+            $items[] = ContentItem::create($row,$contentType,(string)$row['uuid']);
+        }
+
+        return $items;
     }
 }

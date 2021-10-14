@@ -49,9 +49,25 @@ class ContentItem implements ContentItemInterface
      */
     public function __construct(array $data, ContentTypeInterface $type, string $id)
     {
-        $this->data = $data;
+        $this->data = $data;    
         $this->type = $type;
         $this->id = $id;
+    }
+
+    /**
+     * Get title fields value
+     *
+     * @return string
+     */
+    public function getTitle(): string
+    {
+        $result = '';
+        $titleFields = $this->type->getTitleFields();
+        foreach ($titleFields as $field) {
+            $result .= empty($result) ? $this->getValue($field) : ' ' . $this->getValue($field);
+        }
+
+        return \trim($result);
     }
 
     /**
@@ -155,7 +171,7 @@ class ContentItem implements ContentItemInterface
     {
         $field = $this->field($fieldName);
         if ($field == null) {
-            return (isset($this->data[$fieldName]) == true) ? $this->data[$fieldName] : $default;
+            return $this->data[$fieldName] ?? $default;
         }
         
         return $field->getValue();
@@ -200,6 +216,16 @@ class ContentItem implements ContentItemInterface
     {
         return $this->id;
     }   
+
+    /**
+     * Get data array
+     *
+     * @return array
+     */
+    public function getDataArray(): array
+    {
+        return $this->data; 
+    }
 
     /**
      * To array

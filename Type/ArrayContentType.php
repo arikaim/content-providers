@@ -26,4 +26,14 @@ class ArrayContentType extends ContentType
         $this->setName('array');
         $this->setTitle('Array');      
     }
+
+    /**
+     * Create
+     *
+     * @return Self
+     */
+    public static function create()
+    {
+        return new ArrayContentType();
+    }
 }

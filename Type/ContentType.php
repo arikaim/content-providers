@@ -26,6 +26,20 @@ abstract class ContentType implements ContentTypeInterface
     protected $fields = [];
 
     /**
+     * Searchable field names
+     *
+     * @var array|null
+     */
+    protected $searchableFields = null;
+
+    /**
+     * Field names used in content lists.
+     *
+     * @var array
+     */
+    protected $titleFields = ['title'];
+
+    /**
      * Set action handlers
      *
      * @var array
@@ -64,9 +78,31 @@ abstract class ContentType implements ContentTypeInterface
      * Constructor
      */
     public function __construct()
-    {      
+    {             
         $this->define();
     }
+
+    /**
+     * Set title fields
+     *
+     * @param array $fieldNames
+     * @return void
+     */
+    public function setTitleFields(array $fieldNames): void
+    {
+        $this->titleFields = $fieldNames;
+    } 
+
+    /**
+     * Set searchable field names
+     *
+     * @param array $fieldNames
+     * @return void
+     */
+    public function setSearchableFields(array $fieldNames): void
+    {
+        $this->searchableFields = $fieldNames;
+    } 
 
     /**
      * Get class name
@@ -151,6 +187,39 @@ abstract class ContentType implements ContentTypeInterface
     public function getFields(): array
     {
         return $this->fields;
+    }
+
+    /**
+     * Get title fields
+     *
+     * @return array
+     */
+    public function getTitleFields(): array
+    {
+        return $this->titleFields;
+    }
+    
+    /**
+     * Get searchable field names
+     *
+     * @return array
+     */
+    public function getSearchableFieldNames(): array
+    {
+        return (\is_array($this->searchableFields) == true) ? $this->searchableFields : $this->getFieldNames();          
+    }
+
+    /**
+     * Get field names
+     *
+     * @return array
+     */
+    public function getFieldNames(): array
+    {
+        foreach ($this->fields as $field) {
+            $items[] = $field->getName();
+        }
+        return $items;
     }
 
     /**

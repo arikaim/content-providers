@@ -11,10 +11,12 @@ namespace Arikaim\Core\Content;
 
 use Arikaim\Core\Content\Type\ArrayContentType;
 use Arikaim\Core\Content\ContentTypeRegistry;
+use Arikaim\Core\Content\ContentSelector;
 use Arikaim\Core\Utils\Path;
 use Arikaim\Core\System\Traits\PhpConfigFile;
 use Arikaim\Core\Interfaces\Content\ContentManagerInterface;
 use Arikaim\Core\Interfaces\Content\ContentProviderInterface;
+use Arikaim\Core\Interfaces\Content\ContentItemInterface;
 use Arikaim\Core\Utils\Uuid;
 use Exception;
 
@@ -62,7 +64,117 @@ class ContentManager implements ContentManagerInterface
     }
 
     /**
-     * Return true if content typ eexists
+     * Search content
+     *
+     * @param string $selector
+     * @param string $query
+     * @param integer $page
+     * @param integer $perPage
+     * @return mixed
+     */
+    public function search(string $selector, string $query = '', int $page = 1, int $perPage = 25)
+    {
+        $data = ContentSelector::parse($selector);
+        $searchField = $data['key_fields'][0] ?? '';
+        if (empty($searchField) == true) {
+            return false;
+        }
+    
+        $contentType = $this->typeRegistry()->get($searchField);
+        if (\is_object($contentType) == true) {
+            $data['key_fields'] = $contentType->getSearchableFieldNames();
+        }
+
+        if ($data['type'] == ContentSelector::DB_MODEL_TYPE) {
+            $model = \Arikaim\Core\Db\Model::create($data['provider'],$data['content_type'] ?? null);
+            if (\is_object($model) == false) {
+                return false;
+            }
+            $model = $model->whereRaw('UPPER(' . $searchField . ') LIKE ?',['%' . $query . '%']);
+            
+            return $model->get();
+        }
+
+        $provider = $this->type($data['content_type'],$data['provider'] ?? null);
+        if ($provider == null) {
+            return false;
+        }
+        $data['query'] = $query;
+
+        return $provider->getContentItems($data,$page,$perPage);
+    }
+
+    /**
+     * Create content selector
+     *
+     * @param string $provider
+     * @param string $contentType
+     * @param string $keyFields
+     * @param string $key
+     * @param string $type
+     * @return string
+     */
+    public function createSelector(
+        string $provider,
+        string $contentType,
+        string $keyFields,
+        string $key, 
+        string $type = 'content'
+    ): string
+    {
+        return ContentSelector::create($provider,$contentType,$keyFields,$key,$type);
+    }
+
+    /**
+     * Get content
+     *
+     * @param string $selector
+     * @return ContentItemInterface|null
+     */
+    public function get(string $selector): ?ContentItemInterface
+    {
+        $data = ContentSelector::parse($selector);
+        if ($data == null) {
+            return null;
+        }
+
+        if ($data['type'] == ContentSelector::DB_MODEL_TYPE) {
+            $model = \Arikaim\Core\Db\Model::create($data['provider'],$data['content_type'] ?? null);
+            if (\is_object($model) == false) {
+                return null;
+            }
+
+            foreach ($data['key_fields'] as $index => $key) {
+                $value = $data['key_values'][$index] ?? null;
+                if (empty($value) == false) {
+                    $model = $model->where($key,'=',$value);
+                }                
+            }
+            $model = $model->first();
+            $data = \is_object($model) ? $model->toArray() : [];
+
+            return ContentItem::create($data,ArrayContentType::create(),(string)$data['id']);
+        }
+
+        $provider = $this->type($data['content_type'],$data['provider'] ?? null);
+        if ($provider == null) {
+            return null;
+        }
+
+        $contentItem = $provider->getContent($data['key_values'],$data['content_type']);
+        if ($contentItem == null) {
+            return null;
+        }
+        // resolve content Id
+        $key = $data['key_fields'][0] ?? 'id';
+        $id = $contentItem['uuid'] ?? $contentItem['id'] ?? $contentItem[$key] ?? '';
+        $contentType = $this->typeRegistry()->get($data['content_type']);
+
+        return ContentItem::create($contentItem,$contentType,(string)$id);
+    }
+
+    /**
+     * Return true if content type exists
      *
      * @param string $name
      * @return boolean
@@ -167,8 +279,12 @@ class ContentManager implements ContentManagerInterface
         
         $result = [];
         foreach ($this->contentProviders as $item) {
-            if ($item['category'] == $category) {
-                $result[] = $item;
+            if ($item['category'] == $category || empty($category) == true) {
+                if (empty($contentType) == true) {
+                    $result[] = $item;
+                } elseif (\in_array($contentType,$item['type']) == true) {
+                    $result[] = $item;
+                }
             }
         }
         
