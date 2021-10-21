@@ -295,9 +295,10 @@ class ContentManager implements ContentManagerInterface
      * Get content provider
      * 
      * @param string $name
+     * @param string|null $contentType
      * @return ContentProviderInterface|null
      */
-    public function provider(string $name): ?ContentProviderInterface
+    public function provider(string $name, ?string $contentType = null): ?ContentProviderInterface
     {
         $this->load();     
         $item = $this->contentProviders[$name] ?? null;
@@ -306,7 +307,12 @@ class ContentManager implements ContentManagerInterface
         }
 
         $provider = new $item['handler']();
+        
         // resolve content type
+        if (empty($contentType) == false) {
+            $type = $this->typeRegistry()->get($contentType);         
+            $provider->setContentType($type);
+        }
 
         return $provider;
     }

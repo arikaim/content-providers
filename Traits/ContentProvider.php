@@ -170,13 +170,7 @@ trait ContentProvider
             $value = $filter['query'] ?? $filter['key_values'][$field] ?? '';        
             $model = $model->orWhereRaw('UPPER(' . $field . ') LIKE ?',['%' . $value . '%']);
         }
-     
-      //  $sql = \str_replace(['?'],["\'%s\'"],$model->toSql());
-        
-      //  echo \vsprintf($sql,$model->getBindings());     
-
-       
-
+    
         $data = $model->get()->toArray();
 
         $items = [];
