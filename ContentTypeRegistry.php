@@ -9,6 +9,7 @@
  */
 namespace Arikaim\Core\Content;
 
+use Arikaim\Core\Content\Type\ArrayContentType;
 use Arikaim\Core\Interfaces\Content\ContentTypeInterface;
 use Arikaim\Core\Interfaces\Content\ActionInterface;
 use Arikaim\Core\Utils\Path;
@@ -91,14 +92,14 @@ class ContentTypeRegistry
      * Get content type
      * 
      * @param string $name
-     * @return ContentTypeInterface|null
+     * @return ContentTypeInterface
      */
-    public function get(string $name): ?ContentTypeInterface
+    public function get(string $name): ContentTypeInterface
     {
         $this->load();     
         $item = $this->contentTypes[$name] ?? null;
         if (empty($item) == true) {
-            return null;
+            return new ArrayContentType();          
         }
 
         $contentType = new $item['handler']();

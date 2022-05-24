@@ -107,7 +107,7 @@ class ContentItem implements ContentItemInterface
      *
      * @param string $name
      * @param array|null $options
-     * @return void
+     * @return mixed
      */
     public function runAction(string $name, ?array $options = [])
     {

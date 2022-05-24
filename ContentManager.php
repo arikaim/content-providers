@@ -226,6 +226,34 @@ class ContentManager implements ContentManagerInterface
     }
 
     /**
+     * Run action
+     *
+     * @param string     $contentType
+     * @param string     $actionName
+     * @param mixed     $data
+     * @param array|null $options
+     * @return mixed
+     */
+    public function runAction(string $contentType, string $actionName, $data, ?array $options = [])
+    {
+        $type = $this->typeRegistry()->get($contentType);
+        $actions = $type->getActions();
+        $action = $actions[$actionName] ?? null;
+
+        if (\is_object($action) == false) {
+            return false;
+        }
+        if (\is_object($data) == true) {
+            $data = $data->toArray();
+        }
+        if (\is_array($data) == false) {
+            $data = [$data];
+        }
+
+        return $action->execute($data,$options);
+    }
+
+    /**
      * Create content item
      *
      * @param mixed $data
@@ -235,7 +263,6 @@ class ContentManager implements ContentManagerInterface
     public function createItem($data, string $contentType)
     {
         $type = $this->typeRegistry()->get($contentType);
-        $type = ($type == null) ? new ArrayContentType() : $type;
           
         if (\is_object($data) == true) {
             $data = $data->toArray();
