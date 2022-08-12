@@ -7,12 +7,11 @@ Content providers manager and content type registtry for Arikaim CMS.
 This package is part of arikaim/core package.
 
 
-#### Requirements 
-  * PHP 7.2, 7.3, 7.4
-
 
 #### Installation
 
 ```sh
+
 composer require arikaim/content-providers
+
 ```

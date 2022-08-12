@@ -186,7 +186,7 @@ class ContentItem implements ContentItemInterface
     public function field(string $fieldName): ?FieldInterface
     {
         $field = $this->type->getField($fieldName);
-        if (\is_null($field) == true) {
+        if ($field === null) {
             return null;
         }
         $value = $this->data[$fieldName] ?? null;

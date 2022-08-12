@@ -285,7 +285,7 @@ class ContentManager implements ContentManagerInterface
      */
     public function load(bool $reload = false): void
     {
-        if ((\is_null($this->contentProviders) == true) || ($reload == true)) {
+        if (($this->contentProviders === null) || ($reload == true)) {
             $this->contentProviders = $this->include($this->providersFileName);
         }        
     }

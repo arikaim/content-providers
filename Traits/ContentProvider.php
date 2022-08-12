@@ -102,7 +102,7 @@ trait ContentProvider
      */
     public function getProviderName(): string
     {
-        if (\is_null($this->contentProviderName) == true) {
+        if ($this->contentProviderName === null) {
             throw new Exception('Not valid content provider name',1); 
         }
 

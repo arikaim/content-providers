@@ -60,7 +60,7 @@ class ContentTypeRegistry
      */
     public function load(bool $reload = false): void
     {
-        if ((\is_null($this->contentTypes) == true) || ($reload == true)) {
+        if (($this->contentTypes === null) || ($reload == true)) {
             $this->contentTypes = $this->include($this->contentTypesFileName);
         }
     }
