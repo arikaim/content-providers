@@ -81,13 +81,13 @@ class ContentManager implements ContentManagerInterface
         }
     
         $contentType = $this->typeRegistry()->get($searchField);
-        if (\is_object($contentType) == true) {
+        if ($contentType != null) {
             $data['key_fields'] = $contentType->getSearchableFieldNames();
         }
 
         if ($data['type'] == ContentSelector::DB_MODEL_TYPE) {
             $model = \Arikaim\Core\Db\Model::create($data['provider'],$data['content_type'] ?? null);
-            if (\is_object($model) == false) {
+            if ($model == null) {
                 return false;
             }
             $model = $model->whereRaw('UPPER(' . $searchField . ') LIKE ?',['%' . $query . '%']);
@@ -140,7 +140,7 @@ class ContentManager implements ContentManagerInterface
 
         if ($data['type'] == ContentSelector::DB_MODEL_TYPE) {
             $model = \Arikaim\Core\Db\Model::create($data['provider'],$data['content_type'] ?? null);
-            if (\is_object($model) == false) {
+            if ($model == null) {
                 return null;
             }
 
@@ -151,7 +151,7 @@ class ContentManager implements ContentManagerInterface
                 }                
             }
             $model = $model->first();
-            $data = \is_object($model) ? $model->toArray() : [];
+            $data = ($model != null) ? $model->toArray() : [];
 
             return ContentItem::create($data,ArrayContentType::create(),(string)$data['id']);
         }
@@ -393,7 +393,7 @@ class ContentManager implements ContentManagerInterface
     public function unRegisterProvider(string $name): bool
     {
         $provider = $this->provider($name);
-        if (\is_object($provider) == false) {
+        if ($provider == null) {
             return true;   
         }
         $name = $provider->getProviderName();

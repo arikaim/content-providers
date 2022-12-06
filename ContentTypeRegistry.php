@@ -129,11 +129,8 @@ class ContentTypeRegistry
     {
         $this->load();    
         $item = $this->contentTypes[$contentType] ?? null;
-        if (empty($item) == true) {
-            return null;
-        }
 
-        return $item['providers'] ?? null;
+        return (empty($item) == true) ? null : $item['providers'] ?? null; 
     }
 
     /**
@@ -237,7 +234,7 @@ class ContentTypeRegistry
     public function unRegister(string $name): bool
     {
         $contentType = $this->get($name);
-        if (\is_object($contentType) == false) {
+        if ($contentType == null) {
             return true;   
         }
         $name = $contentType->getName();
