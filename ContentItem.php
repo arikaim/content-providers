@@ -67,7 +67,7 @@ class ContentItem implements ContentItemInterface
             $result .= empty($result) ? $this->getValue($field) : ' ' . $this->getValue($field);
         }
 
-        return \trim($result);
+        return \trim($result ?? '');
     }
 
     /**
