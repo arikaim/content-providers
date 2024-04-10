@@ -116,7 +116,9 @@ class ContentTypeRegistry
      */
     public function has(string $name): bool
     {
-        return !empty($this->get($name));
+        $this->load();     
+        
+        return !empty($this->contentTypes[$name] ?? null);
     } 
 
     /**
@@ -209,6 +211,9 @@ class ContentTypeRegistry
 
         $details = $this->resolveDetails($contentType);
         $name = $contentType->getName();
+        
+        // unregister
+        $this->unRegister($name);
 
         // load current array
         $this->contentTypes = $this->includePhpArray($this->contentTypesFileName);        
@@ -241,7 +246,7 @@ class ContentTypeRegistry
 
         unset($this->contentTypes[$name]);
 
-        return $this->saveConfigFile($this->configFileName,$this->contentTypes);     
+        return $this->saveConfigFile($this->contentTypesFileName,$this->contentTypes);     
     }
 
     /**

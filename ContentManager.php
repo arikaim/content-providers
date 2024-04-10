@@ -126,6 +126,45 @@ class ContentManager implements ContentManagerInterface
     }
 
     /**
+     * Get content item
+     *
+     * @param string $key
+     * @return ContentItemInterface|null
+     */
+    public function getItem(string $key): ?ContentItemInterface
+    {
+        global $arikaim;
+        $userId = $arikaim->get('access')->getId();
+        if (empty($userId) == true) {
+            return null;
+        }
+
+        $data = \Arikaim\Core\Db\Model::Content('content')->findByKey($key,$userId);
+        if ($data == null) {
+            return null;
+        }
+
+        if ($data->status != 1) {
+            // disabled
+            return null;
+        }
+
+        $provider = $this->type($data->content_type,null);
+        if ($provider == null) {
+            return null;
+        }
+ 
+        $contentItem = $provider->getContent($data->content_id,$data->content_type);
+        if ($contentItem == null) {
+            return null;
+        }
+
+        $id = $contentItem['uuid'] ?? $contentItem['id'] ?? $contentItem[$key] ?? '';
+
+        return ContentItem::create($contentItem,$data->content_type,(string)$id);
+    }
+
+    /**
      * Get content
      *
      * @param string $selector
@@ -316,6 +355,23 @@ class ContentManager implements ContentManagerInterface
         }
         
         return $result;      
+    }
+
+    /**
+     * Get default provider
+     *
+     * @param string $contentType
+     * @return object|null
+     */
+    public function getDefaultProvider(string $contentType): ?object
+    {
+        $providers = $this->getProviders(null,$contentType);
+        
+        if (isset($providers[0]) == false) {
+            return null;
+        }
+
+        return $this->provider($providers[0]['name'],$contentType);
     }
 
     /**

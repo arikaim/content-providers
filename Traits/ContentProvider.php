@@ -19,6 +19,27 @@ use Exception;
 trait ContentProvider
 {
     /**
+     * Update or create data item
+     *
+     * @param mixed       $key
+     * @param array       $data
+     * @param string|null $contentType
+     * @return mixed
+     */
+    public function updateOrCreate($key, array $data, ?string $contentType = null)
+    {
+        if (empty($key) == true) {
+            return $this->createItem($data,$contentType);
+        }
+
+        if ($this->get($key) == null) {
+            return $this->createItem($data,$contentType);
+        }
+
+        return $this->saveItem($key,$data,$contentType);
+    }
+
+    /**
      * Create new content item
      *
      * @param array $data
@@ -116,7 +137,7 @@ trait ContentProvider
      */
     public function getProviderTitle(): ?string
     {
-        return $this->contentProviderTitle;
+        return $this->contentProviderTitle ?? null;
     }
 
     /**
@@ -137,6 +158,10 @@ trait ContentProvider
      */
     public function get($key)
     {
+        if (empty($key) == true) {
+            return null;
+        }
+        
         $contentType = $this->getContentType();
         $data = $this->getContent($key);
         if ($data == null) {
