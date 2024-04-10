@@ -12,6 +12,7 @@ namespace Arikaim\Core\Content;
 use Arikaim\Core\Content\Type\ArrayContentType;
 use Arikaim\Core\Content\ContentTypeRegistry;
 use Arikaim\Core\Content\ContentSelector;
+use Arikaim\Core\Content\ContentItem;
 use Arikaim\Core\Utils\Path;
 use Arikaim\Core\System\Traits\PhpConfigFile;
 use Arikaim\Core\Interfaces\Content\ContentManagerInterface;
@@ -126,42 +127,65 @@ class ContentManager implements ContentManagerInterface
     }
 
     /**
+     * Save content item
+     *
+     * @param string      $key
+     * @param string      $contentType
+     * @param string|null $title
+     * @return mixed
+     */
+    public function saveContentItem(string $key, string $contentType, ?string $title = null)
+    {
+        $provider = $this->getDefaultProvider($contentType);
+        if ($provider == null) {
+            return false;
+        }
+
+        list($contentId,$content) = $provider->createItem([
+            'user_id' => null
+        ]);
+
+        return \Arikaim\Core\Db\Model::Content('content')->saveItem($key,$contentType,$contentId,$title);
+    }
+
+    /**
      * Get content item
      *
      * @param string $key
      * @return ContentItemInterface|null
      */
-    public function getItem(string $key): ?ContentItemInterface
+    public function getItem(string $key, ?array $default = null): ?ContentItemInterface
     {
         global $arikaim;
-        $userId = $arikaim->get('access')->getId();
-        if (empty($userId) == true) {
-            return null;
-        }
 
+        $userId = $arikaim->get('access')->getId();
+       
         $data = \Arikaim\Core\Db\Model::Content('content')->findByKey($key,$userId);
         if ($data == null) {
-            return null;
+            // find public
+            $data = \Arikaim\Core\Db\Model::Content('content')->findByKey($key,null);
+        }
+
+        if ($data == null) {
+            return ($default == null) ? null : ContentItem::create($default,ArrayContentType::create(),$key);
         }
 
         if ($data->status != 1) {
             // disabled
-            return null;
+            return ($default == null) ? null : ContentItem::create($default,ArrayContentType::create(),$key);
         }
 
-        $provider = $this->type($data->content_type,null);
+        $provider = $this->getDefaultProvider($data->content_type);
         if ($provider == null) {
-            return null;
+            return ($default == null) ? null : ContentItem::create($default,ArrayContentType::create(),$key);
         }
  
-        $contentItem = $provider->getContent($data->content_id,$data->content_type);
+        $contentItem = $provider->get($data->content_id,$data->content_type);
         if ($contentItem == null) {
-            return null;
+            return ($default == null) ? null : ContentItem::create($default,ArrayContentType::create(),$key);
         }
 
-        $id = $contentItem['uuid'] ?? $contentItem['id'] ?? $contentItem[$key] ?? '';
-
-        return ContentItem::create($contentItem,$data->content_type,(string)$id);
+        return $contentItem;
     }
 
     /**
@@ -224,7 +248,7 @@ class ContentManager implements ContentManagerInterface
     } 
 
     /**
-     * Get content type from registry
+     * Get content type provider from registry
      *
      * @param string $name
      * @return ContentProviderInterface|null
@@ -233,7 +257,7 @@ class ContentManager implements ContentManagerInterface
     {        
         $contentType = $this->typeRegistry()->get($name);
         if (empty($providerName) == true) {
-            $providers = $this->typeRegistry()->getPoviders($name);
+            $providers = $this->typeRegistry()->getProviders($name);
             $providerName = $providers[0] ?? null;
         }      
         if (empty($providerName) == true || $contentType == null) {
@@ -365,13 +389,13 @@ class ContentManager implements ContentManagerInterface
      */
     public function getDefaultProvider(string $contentType): ?object
     {
-        $providers = $this->getProviders(null,$contentType);
+        $providers = $this->typeRegistry()->getProviders($contentType);
         
         if (isset($providers[0]) == false) {
             return null;
         }
 
-        return $this->provider($providers[0]['name'],$contentType);
+        return $this->provider($providers[0],$contentType);
     }
 
     /**

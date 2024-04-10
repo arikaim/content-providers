@@ -151,6 +151,7 @@ class ContentItem implements ContentItemInterface
     {
         $fields = $this->type->getFields();
         $result = [];
+        
         foreach($fields as $field) {
             $value = $this->data[$field->getName()] ?? null;
             $field->setValue($value);

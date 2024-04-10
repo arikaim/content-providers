@@ -122,12 +122,12 @@ class ContentTypeRegistry
     } 
 
     /**
-     * Get all content prioviders for type
+     * Get all content provider for type
      *
      * @param string $contentType
      * @return array|null
      */
-    public function getPoviders(string $contentType): ?array
+    public function getProviders(string $contentType): ?array
     {
         $this->load();    
         $item = $this->contentTypes[$contentType] ?? null;
