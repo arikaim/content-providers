@@ -55,6 +55,22 @@ class ContentItem implements ContentItemInterface
     }
 
     /**
+     * Return true if content item is empty
+     *
+     * @return boolean
+     */
+    public function isEmpty(): bool
+    {
+        foreach ($this->data as $key => $value) {
+            if (empty($value) == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Get title fields value
      *
      * @return string

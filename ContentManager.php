@@ -185,7 +185,11 @@ class ContentManager implements ContentManagerInterface
             return ($default == null) ? null : ContentItem::create($default,ArrayContentType::create(),$key);
         }
 
-        return $contentItem;
+        if ($contentItem->isEmpty() == false) {
+            return $contentItem;
+        }
+
+        return ($default == null) ? null : ContentItem::create($default,ArrayContentType::create(),$key);
     }
 
     /**
