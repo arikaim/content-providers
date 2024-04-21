@@ -45,7 +45,6 @@ class ContentItem implements ContentItemInterface
      * @param array $data
      * @param ContentTypeInterface $type
      * @param string $id
-     * @param 
      */
     public function __construct(array $data, ContentTypeInterface $type, string $id)
     {
