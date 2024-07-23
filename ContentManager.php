@@ -19,6 +19,8 @@ use Arikaim\Core\Interfaces\Content\ContentManagerInterface;
 use Arikaim\Core\Interfaces\Content\ContentProviderInterface;
 use Arikaim\Core\Interfaces\Content\ContentItemInterface;
 use Arikaim\Core\Utils\Uuid;
+use Arikaim\Core\Collection\Arrays;
+
 use Exception;
 
 /**
@@ -196,12 +198,27 @@ class ContentManager implements ContentManagerInterface
      * Get content
      *
      * @param string $selector
+     * @param array?null $context;
      * @return ContentItemInterface|null
      */
-    public function get(string $selector): ?ContentItemInterface
+    public function get(string $selector, ?array $context = null): ?ContentItemInterface
     {
         $data = ContentSelector::parse($selector);
         if ($data == null) {
+            return null;
+        }
+
+        if ($data['type'] == ContentSelector::ARRAY_TYPE) {
+            $key = $data['key_fields'][0] ?? null;
+            if (empty($key) == true || empty($context) == true) {
+                return null;
+            }
+
+            $value = $context[$key] ?? Arrays::getValue($context,$key);
+            if ($value != null) {
+                return ContentItem::create([$value],ArrayContentType::create(),(string)$key);
+            }
+
             return null;
         }
 

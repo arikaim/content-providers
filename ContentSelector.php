@@ -18,10 +18,12 @@ class ContentSelector
 {
     const CONTENT_PROVIDER_TYPE = 'content';
     const DB_MODEL_TYPE         = 'model';
+    const ARRAY_TYPE            = 'array';
 
     const SELECTOR_TYPES = [
         Self::CONTENT_PROVIDER_TYPE,
-        Self::DB_MODEL_TYPE
+        Self::DB_MODEL_TYPE,
+        Self::ARRAY_TYPE
     ];
 
     /**
@@ -33,7 +35,7 @@ class ContentSelector
      * @param string $key
      * @param string $type
      * @return string
-     */
+    */
     public static function create(
         string $provider,
         string $contentType,
