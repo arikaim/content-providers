@@ -63,20 +63,29 @@ class ContentSelector
         if (empty($selector) == true) {
             return null;
         }
+  
+        $tokens = \explode('>',$selector);
+        $type = $tokens[0] ?? null;
+        $params = $tokens[1] ?? null;
 
-        list($result['type'],$params) = \explode('>',$selector);
-        if (\in_array($result['type'],Self::SELECTOR_TYPES) == false) {
-            throw new Exception('Not vlaid content selector type ' . $result['type'],1);
-            return null;             
+        if (\in_array($type,Self::SELECTOR_TYPES) == false) {
+            throw new Exception('Not vlaid content selector type ' . $type,1);                 
         }
-     
-        list($provider,$keyFields,$keyValues) = \explode(':',$params);
-        list($result['provider'],$result['content_type']) = \array_pad(\explode(',',$provider),2,null);
-
-        $result['key_fields'] = \explode(',',$keyFields);
-        $result['key_values'] = \explode(',',$keyValues);
-       
-        return $result;
+        
+        $tokens = \explode(':',$params);
+        $provider = $tokens[0] ?? null;
+        $keyFields = $tokens[1] ?? null;
+        $keyValues = $tokens[2] ?? null;
+      
+        $tokens = \array_pad(\explode(',',$provider),2,null);
+        
+        return [
+            'type'         => $type,
+            'provider'     => $tokens[0] ?? null,
+            'content_type' => $tokens[1] ?? null,
+            'key_fields'   => \explode(',',$keyFields),
+            'key_values'   => \explode(',',$keyValues)
+        ];
     }
 
     /**
@@ -91,7 +100,9 @@ class ContentSelector
             return false;
         }
 
-        list($type,$params) = \explode('>',$selector);
+        $tokens = \explode('>',$selector);
+        $type = $tokens[0] ?? null;
+        $params = $tokens[1] ?? null;
 
         if (\in_array($type,Self::SELECTOR_TYPES) == false) {
             return false;
