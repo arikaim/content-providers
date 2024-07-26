@@ -108,6 +108,17 @@ class ContentManager implements ContentManagerInterface
     }
 
     /**
+     * Retrun true if content selctor is valid
+     *
+     * @param string $selector
+     * @return boolean
+     */
+    public function isValidSelector(string $selector): bool
+    {
+        return ContentSelector::isValid($selector);
+    }
+
+    /**
      * Create content selector
      *
      * @param string $provider
