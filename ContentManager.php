@@ -227,7 +227,7 @@ class ContentManager implements ContentManagerInterface
 
             $value = $context[$key] ?? Arrays::getValue($context,$key);
             if ($value != null) {
-                $data = (\is_array($value) == true) ? $value : [ $key => $value ]; 
+                $data = (\is_array($value) == true) ? $value : [$value]; 
                 return ContentItem::create($data,ArrayContentType::create(),(string)$key);
             }
 
