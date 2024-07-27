@@ -66,16 +66,16 @@ class ContentSelector
   
         $tokens = \explode('>',$selector);
         $type = $tokens[0] ?? null;
-        $params = $tokens[1] ?? null;
+        $params = $tokens[1] ?? '';
 
         if (\in_array($type,Self::SELECTOR_TYPES) == false) {
             throw new Exception('Not vlaid content selector type ' . $type,1);                 
         }
         
         $tokens = \explode(':',$params);
-        $provider = $tokens[0] ?? null;
-        $keyFields = $tokens[1] ?? null;
-        $keyValues = $tokens[2] ?? null;
+        $provider = $tokens[0] ?? '';
+        $keyFields = $tokens[1] ?? '';
+        $keyValues = $tokens[2] ?? '';
       
         $tokens = \array_pad(\explode(',',$provider),2,null);
         
