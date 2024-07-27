@@ -24,7 +24,7 @@ class ArrayContentType extends ContentType
     protected function define(): void
     {
         $this->setName('array');
-        $this->setTitle('Array');      
+        $this->setTitle('Array');    
     }
 
     /**
