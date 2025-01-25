@@ -119,6 +119,18 @@ class ContentManager implements ContentManagerInterface
     }
 
     /**
+     * Parse content selector
+     * @param string $selector
+     * @return array|null
+     */
+    public function parseSelector(string $selector): ?array
+    {
+        return (ContentSelector::isValid($selector) == false) ?
+            null :
+            ContentSelector::parse($selector);
+    }
+
+    /**
      * Create content selector
      *
      * @param string $provider
@@ -242,9 +254,15 @@ class ContentManager implements ContentManagerInterface
 
             foreach ($data['key_fields'] as $index => $key) {
                 $value = $data['key_values'][$index] ?? null;
-                if (empty($value) == false) {
+                if (empty($value) == true) {
+                    continue;
+                }
+
+                if ($value == 'random') {
+                    $model = $model->all()->random(1);                 
+                } else {
                     $model = $model->where($key,'=',$value);
-                }                
+                }                                              
             }
             $model = $model->first();
             $data = ($model != null) ? $model->toArray() : [];
@@ -478,7 +496,6 @@ class ContentManager implements ContentManagerInterface
     { 
         if (($provider instanceof ContentProviderInterface) == false) {
             throw new Exception('Not valid content provider class.');
-            return false;
         }
 
         $details = $this->resolveProviderDetails($provider);
