@@ -250,6 +250,10 @@ class ContentItem implements ContentItemInterface
      */
     public function toArray(): array
     {
+        if ($this->type->getName() == 'array') {
+            return $this->data;
+        }
+        
         $result = [];
         foreach($this->fields() as $field) {
             $name = $field->getName();

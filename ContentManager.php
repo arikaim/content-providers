@@ -110,44 +110,52 @@ class ContentManager implements ContentManagerInterface
     /**
      * Retrun true if content selctor is valid
      *
-     * @param string $selector
+     * @param string|null $selector
      * @return boolean
      */
-    public function isValidSelector(string $selector): bool
+    public function isValidSelector(?string $selector): bool
     {
         return ContentSelector::isValid($selector);
     }
 
     /**
      * Parse content selector
-     * @param string $selector
+     * @param string|null $selector
      * @return array|null
      */
-    public function parseSelector(string $selector): ?array
+    public function parseSelector(?string $selector): ?array
     {
         return (ContentSelector::isValid($selector) == false) ?
             null :
             ContentSelector::parse($selector);
     }
 
-    /**
+   /**
      * Create content selector
      *
-     * @param string $provider
-     * @param string $contentType
-     * @param string $keyFields
-     * @param string $key
+     * @param string|null $provider
+     * @param string|null $contentType
+     * @param string|null $keyFields
+     * @param string|null $key
      * @param string $type
-     * @return string
+     * @return string|null
      */
     public function createSelector(
-        string $provider,
-        string $contentType,
-        string $keyFields,
-        string $key, 
+        ?string $provider,
+        ?string $contentType,
+        ?string $keyFields,
+        ?string $key, 
         string $type = 'content'
-    ): string
+    ): ?string
     {
+        if (empty($provider) == true || 
+            empty($contentType) == true ||
+            empty($key) == true
+        ) {
+            return null;
+        }
+        $keyFields = (empty($keyFields) == true) ? 'id' : $keyFields;
+        
         return ContentSelector::create($provider,$contentType,$keyFields,$key,$type);
     }
 

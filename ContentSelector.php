@@ -91,10 +91,10 @@ class ContentSelector
     /**
      * Return true if content selector is valid
      *
-     * @param string $selector
+     * @param string|null $selector
      * @return boolean
      */
-    public static function isValid(string $selector): bool
+    public static function isValid(?string $selector): bool
     {
         if (empty($selector) == true) {
             return false;
